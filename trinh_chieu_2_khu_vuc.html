@@ -51,44 +51,48 @@
     </div>
   </div>
 
-  <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbxyTBgAkwZZ546HY8GsatqY9p229gSMytQPzro4MhoXZc6M4Mafz36ApGgT8169c83jiw/exec";
+ <script>
+  const apiUrl = "https://script.google.com/macros/s/AKfycbxyTBgAkwZZ546HY8GsatqY9p229gSMytQPzro4MhoXZc6M4Mafz36ApGgT8169c83jiw/exec";
 
-    async function loadData() {
-      try {
-        const res = await fetch(apiUrl);
-        const data = await res.json();
+  async function loadData() {
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
 
-        if (!Array.isArray(data) || data.length === 0) {
-          document.getElementById("table1").innerHTML = "<tr><td>Không có dữ liệu</td></tr>";
-          document.getElementById("table2").innerHTML = "<tr><td>Không có dữ liệu</td></tr>";
-          return;
-        }
-
-        // Cột cho 2 khu vực
-        const columns1 = ["Loại phôi chuẩn bị sản xuất", "Số lượng phôi yêu cầu", "Ngày lệnh", "kích thước phôi", "Loại giấy", "Định lượng", "Khổ", "Thứ tự sản xuất"];
-        const columns2 = ["Loại phôi đã hoàn thành", "Số lượng phôi thực tế", "Ngày giờ hoàn thành", "Nhiệt giấy đầu ra lô sóng", "Nhiệt giấy đầu vào máy keo", "Nhiệt phôi đầu ra khỏi giàn chắn"];
-
-        function renderTable(data, tableId, columns) {
-          const table = document.getElementById(tableId);
-          let html = "<thead><tr>" + columns.map(col => `<th>${col}</th>`).join("") + "</tr></thead><tbody>";
-          data.forEach(row => {
-            html += "<tr>" + columns.map(col => `<td>${row[col] ?? ""}</td>`).join("") + "</tr>";
-          });
-          html += "</tbody>";
-          table.innerHTML = html;
-        }
-
-        renderTable(data, "table1", columns1);
-        renderTable(data, "table2", columns2);
-
-      } catch (e) {
-        console.error("Lỗi khi tải dữ liệu:", e);
+      if (!Array.isArray(data) || data.length < 2) {
+        document.getElementById("table1").innerHTML = "<tr><td>Không có dữ liệu</td></tr>";
+        document.getElementById("table2").innerHTML = "<tr><td>Không có dữ liệu</td></tr>";
+        return;
       }
-    }
 
-    loadData();
-    setInterval(loadData, 60000); // 1 phút
-  </script>
+      const headers = data[0];
+      const rows = data.slice(1);
+
+      const section1Indexes = [0,1,2,3,4,5,6,7];     // B → I
+      const section2Indexes = [10,11,12,13,14,15];   // K → P
+
+      function buildTable(containerId, indexes) {
+        const container = document.getElementById(containerId);
+        let html = "<thead><tr>" + indexes.map(i => `<th>${headers[i]}</th>`).join("") + "</tr></thead><tbody>";
+
+        rows.forEach(row => {
+          html += "<tr>" + indexes.map(i => `<td>${row[i] ?? ""}</td>`).join("") + "</tr>";
+        });
+
+        html += "</tbody>";
+        container.innerHTML = html;
+      }
+
+      buildTable("table1", section1Indexes);
+      buildTable("table2", section2Indexes);
+    } catch (e) {
+      console.error("Lỗi khi tải dữ liệu:", e);
+    }
+  }
+
+  loadData();
+  setInterval(loadData, 60000);
+</script>
+
 </body>
 </html>
