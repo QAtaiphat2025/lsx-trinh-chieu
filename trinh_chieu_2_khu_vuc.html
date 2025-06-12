@@ -1,60 +1,94 @@
-<script>
-  const apiUrl = "https://script.google.com/macros/s/AKfycbxyTBgAkwZZ546HY8GsatqY9p229gSMytQPzro4MhoXZc6M4Mafz36ApGgT8169c83jiw/exec";
-
-  async function loadData() {
-    try {
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-
-      const table1 = document.getElementById("table1");
-      const table2 = document.getElementById("table2");
-      table1.innerHTML = "";
-      table2.innerHTML = "";
-
-      if (!Array.isArray(data) || data.length === 0) {
-        table1.innerHTML = "<tr><td>Không có dữ liệu</td></tr>";
-        table2.innerHTML = "<tr><td>Không có dữ liệu</td></tr>";
-        return;
-      }
-
-      // Các cột cần hiển thị cho từng khu vực
-      const columns1 = [
-        "Loại phôi chuẩn bị sản xuất",
-        "Số lượng phôi yêu cầu",
-        "Ngày lệnh",
-        "kích thước phôi",
-        "Loại giấy",
-        "Định lượng",
-        "Khổ",
-        "Thứ tự sản xuất"
-      ];
-
-      const columns2 = [
-        "Loại phôi đã hoàn thành",
-        "Số lượng phôi thực tế",
-        "Ngày giờ hoàn thành",
-        "Nhiệt giấy đầu ra lô sóng",
-        "Nhiệt giấy đầu vào máy keo",
-        "Nhiệt phôi đầu ra khỏi giàn chắn"
-      ];
-
-      function renderTable(container, columns) {
-        let html = "<thead><tr>" + columns.map(c => `<th>${c}</th>`).join("") + "</tr></thead><tbody>";
-        data.forEach(row => {
-          html += "<tr>" + columns.map(c => `<td>${row[c] ?? ""}</td>`).join("") + "</tr>";
-        });
-        html += "</tbody>";
-        container.innerHTML = html;
-      }
-
-      renderTable(table1, columns1);
-      renderTable(table2, columns2);
-
-    } catch (error) {
-      console.error("Lỗi khi tải dữ liệu:", error);
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard 2 khu vực</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #000; color: #fff; }
+    .container {
+      display: flex;
+      flex-direction: row;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
     }
-  }
+    .section {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 16px;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #222;
+    }
+    tr:nth-child(even) {
+      background-color: #111;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="section">
+      <h2>Khu vực 1: Phôi chuẩn bị sản xuất</h2>
+      <table id="table1"></table>
+    </div>
+    <div class="section">
+      <h2>Khu vực 2: Phôi đã hoàn thành</h2>
+      <table id="table2"></table>
+    </div>
+  </div>
 
-  loadData();
-  setInterval(loadData, 60000);
-</script>
+  <script>
+    const apiUrl = "https://script.google.com/macros/s/AKfycbxyTBgAkwZZ546HY8GsatqY9p229gSMytQPzro4MhoXZc6M4Mafz36ApGgT8169c83jiw/exec";
+
+    async function loadData() {
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          document.getElementById("table1").innerHTML = "<tr><td>Không có dữ liệu</td></tr>";
+          document.getElementById("table2").innerHTML = "<tr><td>Không có dữ liệu</td></tr>";
+          return;
+        }
+
+        // Cột cho 2 khu vực
+        const columns1 = ["Loại phôi chuẩn bị sản xuất", "Số lượng phôi yêu cầu", "Ngày lệnh", "kích thước phôi", "Loại giấy", "Định lượng", "Khổ", "Thứ tự sản xuất"];
+        const columns2 = ["Loại phôi đã hoàn thành", "Số lượng phôi thực tế", "Ngày giờ hoàn thành", "Nhiệt giấy đầu ra lô sóng", "Nhiệt giấy đầu vào máy keo", "Nhiệt phôi đầu ra khỏi giàn chắn"];
+
+        function renderTable(data, tableId, columns) {
+          const table = document.getElementById(tableId);
+          let html = "<thead><tr>" + columns.map(col => `<th>${col}</th>`).join("") + "</tr></thead><tbody>";
+          data.forEach(row => {
+            html += "<tr>" + columns.map(col => `<td>${row[col] ?? ""}</td>`).join("") + "</tr>";
+          });
+          html += "</tbody>";
+          table.innerHTML = html;
+        }
+
+        renderTable(data, "table1", columns1);
+        renderTable(data, "table2", columns2);
+
+      } catch (e) {
+        console.error("Lỗi khi tải dữ liệu:", e);
+      }
+    }
+
+    loadData();
+    setInterval(loadData, 60000); // 1 phút
+  </script>
+</body>
+</html>
